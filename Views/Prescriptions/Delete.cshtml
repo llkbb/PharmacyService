@@ -1,0 +1,44 @@
+﻿@model PharmacyChain.Models.Prescription
+
+@{
+    ViewData["Title"] = "Видалити рецепт";
+}
+
+<h2>Видалити рецепт</h2>
+
+<div class="alert alert-danger">
+    Ви справді хочете видалити цей рецепт?
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Клієнт</th>
+        <td>@Model.Customer?.FullName</td>
+    </tr>
+    <tr>
+        <th>Препарат</th>
+        <td>@Model.Drug?.Name</td>
+    </tr>
+    <tr>
+        <th>Аптека</th>
+        <td>@Model.Pharmacy?.Name</td>
+    </tr>
+    <tr>
+        <th>Лікар</th>
+        <td>@Model.DoctorName</td>
+    </tr>
+    <tr>
+        <th>Дата видачі</th>
+        <td>@Model.DateIssued.ToString("yyyy-MM-dd")</td>
+    </tr>
+    <tr>
+        <th>Дійсний (днів)</th>
+        <td>@Model.ValidDays</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input asp-for="Id" type="hidden" />
+    <button class="btn btn-danger">Видалити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

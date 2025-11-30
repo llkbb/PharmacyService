@@ -1,0 +1,43 @@
+﻿@model IEnumerable<PharmacyChain.Models.PurchaseOrderLine>
+
+@{
+    ViewData["Title"] = "Позиції закупівлі";
+}
+
+<h2>Позиції закупівлі</h2>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Додати позицію</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Замовлення</th>
+            <th>Препарат</th>
+            <th>Кількість</th>
+            <th>Ціна закупівлі</th>
+            <th>Сума</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var line in Model)
+        {
+            <tr>
+                <td>@line.PurchaseOrderId</td>
+                <td>@line.Drug?.Name</td>
+                <td>@line.Quantity</td>
+                <td>@line.UnitCost</td>
+                <td>@(line.Quantity* line.UnitCost)</td>
+
+                <td>
+                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@line.Id">Деталі</a>
+                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@line.Id">Редагувати</a>
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@line.Id">Видалити</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

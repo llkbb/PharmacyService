@@ -1,0 +1,36 @@
+﻿@model PharmacyChain.Models.PurchaseOrder
+
+@{
+    ViewData["Title"] = "Видалити закупівлю";
+}
+
+<h2>Видалити закупівлю</h2>
+
+<div class="alert alert-danger">
+    Ви дійсно хочете видалити це замовлення і всі його позиції?
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <td>@Model.Id</td>
+    </tr>
+    <tr>
+        <th>Дата</th>
+        <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+    </tr>
+    <tr>
+        <th>Постачальник</th>
+        <td>@Model.Supplier?.Name</td>
+    </tr>
+    <tr>
+        <th>Аптека</th>
+        <td>@Model.Pharmacy?.Name</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input asp-for="Id" type="hidden" />
+    <button class="btn btn-danger">Видалити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

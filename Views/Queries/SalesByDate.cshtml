@@ -1,0 +1,32 @@
+﻿@model IEnumerable<(System.DateTime SaleDate, decimal Total)>
+@{ ViewData["Title"] = "Продажі за період"; }
+<h2>Продажі за період</h2>
+
+<form method="post" class="row g-2">
+  <div class="col-auto">
+    <label class="form-label">Від:</label>
+    <input type="date" class="form-control" name="from"
+           value="@(((DateTime)ViewBag.From).ToString("yyyy-MM-dd"))" />
+  </div>
+  <div class="col-auto">
+    <label class="form-label">До:</label>
+    <input type="date" class="form-control" name="to"
+           value="@(((DateTime)ViewBag.To).ToString("yyyy-MM-dd"))" />
+  </div>
+  <div class="col-auto align-self-end"><button class="btn btn-primary">Показати</button></div>
+</form>
+
+@if (Model != null && Model.Any())
+{
+  <table class="table table-striped mt-3">
+    <thead><tr><th>Дата</th><th>Сума, ₴</th></tr></thead>
+    <tbody>
+    @foreach (var r in Model)
+    {
+      <tr><td>@r.SaleDate.ToString("yyyy-MM-dd")</td><td>@r.Total</td></tr>
+    }
+    </tbody>
+  </table>
+}
+
+<a asp-action="Index">← Повернутися до запитів</a>

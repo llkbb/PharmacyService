@@ -1,0 +1,58 @@
+﻿@model PharmacyChain.ViewModels.SaleCreateSimpleVm
+@{ ViewData["Title"] = "Додати продаж"; var msg = TempData["msg"] as string; }
+
+<h2>Додати продаж</h2>
+@if(!string.IsNullOrEmpty(msg)){ <div class="alert alert-success">@msg</div> }
+
+<form method="post" asp-action="InsertSale" class="row g-3">
+  <div class="col-12">
+    <div asp-validation-summary="All" class="text-danger"></div>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Аптека</label>
+    <select class="form-select" asp-for="PharmacyId" asp-items="ViewBag.Pharmacies" id="pharmacy"></select>
+    <span asp-validation-for="PharmacyId" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Препарат (лише наявні)</label>
+    <select class="form-select" asp-for="DrugId" asp-items="ViewBag.Drugs" id="drug"></select>
+    <span asp-validation-for="DrugId" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label">Кількість</label>
+    <input class="form-control" asp-for="Qty" />
+    <span asp-validation-for="Qty" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label">Ціна (необов'язково)</label>
+    <input class="form-control" asp-for="Price" />
+    <span asp-validation-for="Price" class="text-danger"></span>
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-primary">Створити продаж</button>
+    <a asp-action="Index" class="btn btn-link">← До запитів</a>
+  </div>
+</form>
+
+@section Scripts{
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    document.getElementById('pharmacy').addEventListener('change', async (e) => {
+      const id = e.target.value;
+      const res = await fetch(`/Queries/GetDrugsForPharmacy?pharmacyId=${id}`);
+      const drugs = await res.json();
+      const sel = document.getElementById('drug');
+      sel.innerHTML = '';
+      drugs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id; opt.textContent = d.name;
+        sel.appendChild(opt);
+      });
+    });
+  </script>
+}

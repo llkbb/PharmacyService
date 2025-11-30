@@ -1,0 +1,13 @@
+﻿@model IEnumerable<PharmacyChain.Models.Drug>
+@{ ViewData["Title"] = "Рецептурні препарати"; }
+<h2>Рецептурні препарати</h2>
+<table class="table table-striped">
+  <thead><tr><th>Назва</th><th>Виробник</th><th>Категорія</th></tr></thead>
+  <tbody>
+  @foreach (var d in Model)
+  {
+    <tr><td>@d.Name</td><td>@d.Manufacturer</td><td>@d.Category</td></tr>
+  }
+  </tbody>
+</table>
+<a asp-action="Index">← Повернутися до запитів</a>

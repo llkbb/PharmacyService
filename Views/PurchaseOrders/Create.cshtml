@@ -1,0 +1,30 @@
+﻿@model PharmacyChain.Models.PurchaseOrder
+
+@{
+    ViewData["Title"] = "Створити закупівлю";
+}
+
+<h2>Створити закупівлю</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Постачальник</label>
+        <select asp-for="SupplierId" class="form-select" asp-items="ViewBag.Suppliers"></select>
+        <span asp-validation-for="SupplierId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <p class="text-muted">
+        Позиції закупівлі (товари) додаються окремо після створення закупівлі.
+    </p>
+
+    <button type="submit" class="btn btn-success">Створити</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+
+</form>

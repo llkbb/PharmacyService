@@ -1,0 +1,47 @@
+﻿@model PharmacyChain.Models.Drug
+
+@{
+    ViewData["Title"] = "Редагувати препарат";
+}
+
+<h2>Редагувати препарат</h2>
+
+<form asp-action="Edit" method="post">
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label class="form-label">Назва</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Категорія</label>
+        <input asp-for="Category" class="form-control" />
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Виробник</label>
+        <input asp-for="Manufacturer" class="form-control" />
+        <span asp-validation-for="Manufacturer" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Потребує рецепта?</label>
+        <select asp-for="PrescriptionRequired" class="form-select">
+            <option value="true" selected="@Model.PrescriptionRequired">Так</option>
+            <option value="false" selected="@(!Model.PrescriptionRequired)">Ні</option>
+        </select>
+        <span asp-validation-for="PrescriptionRequired" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Поріг замовлення</label>
+        <input asp-for="ReorderLevel" class="form-control" />
+        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-warning">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

@@ -1,0 +1,31 @@
+﻿@model PharmacyChain.Models.Sale
+
+@{
+    ViewData["Title"] = "Створити продаж";
+}
+
+<h2>Створити продаж</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Клієнт (необов'язково)</label>
+        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+            <option value="">Гість</option>
+        </select>
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+    </div>
+
+    <p class="text-muted">
+        Позиції продажу (товари) додаються окремо після створення продажу.
+    </p>
+
+    <button type="submit" class="btn btn-success">Створити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

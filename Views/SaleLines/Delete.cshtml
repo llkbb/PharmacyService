@@ -1,0 +1,40 @@
+﻿@model PharmacyChain.Models.SaleLine
+
+@{
+    ViewData["Title"] = "Видалити позицію";
+}
+
+<h2>Видалити позицію продажу</h2>
+
+<div class="alert alert-danger">
+    Ви дійсно хочете видалити цю позицію?
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID Продажу</th>
+        <td>@Model.SaleId</td>
+    </tr>
+    <tr>
+        <th>Препарат</th>
+        <td>@Model.Drug?.Name</td>
+    </tr>
+    <tr>
+        <th>Кількість</th>
+        <td>@Model.Quantity</td>
+    </tr>
+    <tr>
+        <th>Ціна</th>
+        <td>@Model.UnitPrice</td>
+    </tr>
+    <tr>
+        <th>Сума</th>
+        <td>@(Model.Quantity* Model.UnitPrice)</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input asp-for="Id" type="hidden" />
+    <button class="btn btn-danger">Видалити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

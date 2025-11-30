@@ -1,0 +1,27 @@
+﻿@model PharmacyChain.Models.Pharmacy
+
+@{
+    ViewData["Title"] = "Деталі аптеки";
+}
+
+<h2>Деталі аптеки</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Назва</th>
+        <td>@Model.Name</td>
+    </tr>
+    <tr>
+        <th>Адреса</th>
+        <td>@Model.Address</td>
+    </tr>
+    <tr>
+        <th>Телефон</th>
+        <td>@Model.Phone</td>
+    </tr>
+</table>
+
+<p>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    <a class="btn btn-secondary" asp-action="Index">Назад до списку</a>
+</p>

@@ -1,0 +1,35 @@
+﻿@model PharmacyChain.Models.Drug
+
+@{
+    ViewData["Title"] = "Деталі препарату";
+}
+
+<h2>Деталі препарату</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Назва</th>
+        <td>@Model.Name</td>
+    </tr>
+    <tr>
+        <th>Категорія</th>
+        <td>@Model.Category</td>
+    </tr>
+    <tr>
+        <th>Виробник</th>
+        <td>@Model.Manufacturer</td>
+    </tr>
+    <tr>
+        <th>Потрібен рецепт</th>
+        <td>@(Model.PrescriptionRequired ? "Так" : "Ні")</td>
+    </tr>
+    <tr>
+        <th>Поріг замовлення</th>
+        <td>@Model.ReorderLevel</td>
+    </tr>
+</table>
+
+<p>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    <a class="btn btn-secondary" asp-action="Index">Назад</a>
+</p>

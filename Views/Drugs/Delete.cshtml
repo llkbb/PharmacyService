@@ -1,0 +1,40 @@
+﻿@model PharmacyChain.Models.Drug
+
+@{
+    ViewData["Title"] = "Видалити препарат";
+}
+
+<h2>Видалити препарат</h2>
+
+<div class="alert alert-danger">
+    Ви справді хочете видалити цей препарат?
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Назва</th>
+        <td>@Model.Name</td>
+    </tr>
+    <tr>
+        <th>Категорія</th>
+        <td>@Model.Category</td>
+    </tr>
+    <tr>
+        <th>Виробник</th>
+        <td>@Model.Manufacturer</td>
+    </tr>
+    <tr>
+        <th>Потрібен рецепт</th>
+        <td>@(Model.PrescriptionRequired ? "Так" : "Ні")</td>
+    </tr>
+    <tr>
+        <th>Поріг замовлення</th>
+        <td>@Model.ReorderLevel</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button class="btn btn-danger">Видалити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

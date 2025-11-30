@@ -1,0 +1,39 @@
+﻿@model IEnumerable<PharmacyChain.Models.Sale>
+
+@{
+    ViewData["Title"] = "Продажі";
+}
+
+<h2>Продажі</h2>
+
+<p>
+    <a class="btn btn-primary" asp-action="Create">Створити продаж</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Аптека</th>
+            <th>Клієнт</th>
+            <th>Сума</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@item.Pharmacy?.Name</td>
+                <td>@(item.Customer?.FullName ?? "Гість")</td>
+                <td>@item.Total</td>
+                <td>
+                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

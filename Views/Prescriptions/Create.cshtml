@@ -1,0 +1,50 @@
+﻿@model PharmacyChain.Models.Prescription
+
+@{
+    ViewData["Title"] = "Створити рецепт";
+}
+
+<h2>Створити рецепт</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Клієнт</label>
+        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers"></select>
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Препарат</label>
+        <select asp-for="DrugId" class="form-select" asp-items="ViewBag.Drugs"></select>
+        <span asp-validation-for="DrugId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Лікар</label>
+        <input asp-for="DoctorName" class="form-control" />
+        <span asp-validation-for="DoctorName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Дата видачі</label>
+        <input asp-for="DateIssued" type="date" class="form-control" />
+        <span asp-validation-for="DateIssued" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Дійсний (днів)</label>
+        <input asp-for="ValidDays" class="form-control" />
+        <span asp-validation-for="ValidDays" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Створити</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+
+</form>

@@ -1,0 +1,23 @@
+﻿@{ ViewData["Title"] = "Оновити ціну"; var msg = TempData["msg"] as string; }
+<h2>Оновити ціну</h2>
+@if(!string.IsNullOrEmpty(msg)){ <div class="alert alert-info">@msg</div> }
+
+<form method="post" asp-action="UpdatePrice" class="row g-2">
+  <div class="col-md-3">
+    <label class="form-label">Аптека Id</label>
+    <input class="form-control" name="pharmacyId" value="1" />
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Препарат Id</label>
+    <input class="form-control" name="drugId" value="1" />
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Нова ціна</label>
+    <input class="form-control" name="newPrice" value="70" />
+  </div>
+  <div class="col-md-3 align-self-end">
+    <button class="btn btn-warning">Оновити</button>
+  </div>
+</form>
+
+<a asp-action="Index">← Повернутися до запитів</a>

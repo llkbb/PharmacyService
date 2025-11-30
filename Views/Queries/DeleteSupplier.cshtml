@@ -1,0 +1,15 @@
+﻿@{ ViewData["Title"] = "Видалити постачальника"; var msg = TempData["msg"] as string; }
+<h2>Видалити постачальника</h2>
+@if(!string.IsNullOrEmpty(msg)){ <div class="alert alert-info">@msg</div> }
+
+<form method="post" asp-action="DeleteSupplier" class="row g-2">
+  <div class="col-md-4">
+    <label class="form-label">Supplier Id</label>
+    <input class="form-control" name="supplierId" value="3" />
+  </div>
+  <div class="col-md-4 align-self-end">
+    <button class="btn btn-danger">Видалити</button>
+  </div>
+</form>
+
+<a asp-action="Index">← Повернутися до запитів</a>

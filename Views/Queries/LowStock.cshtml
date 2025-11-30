@@ -1,0 +1,18 @@
+﻿@model IEnumerable<PharmacyChain.Models.InventoryItem>
+@{ ViewData["Title"] = "Низькі залишки"; }
+<h2>Низькі залишки</h2>
+<table class="table table-striped">
+  <thead><tr><th>Аптека</th><th>Препарат</th><th>К-сть</th><th>Поріг</th></tr></thead>
+  <tbody>
+  @foreach (var i in Model)
+  {
+    <tr>
+      <td>@i.Pharmacy?.Name</td>
+      <td>@i.Drug?.Name</td>
+      <td>@i.Quantity</td>
+      <td>@i.Drug?.ReorderLevel</td>
+    </tr>
+  }
+  </tbody>
+</table>
+<a asp-action="Index">← Повернутися до запитів</a>

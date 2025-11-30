@@ -1,0 +1,35 @@
+﻿@model PharmacyChain.Models.PurchaseOrder
+
+@{
+    ViewData["Title"] = "Редагувати закупівлю";
+}
+
+<h2>Редагувати закупівлю</h2>
+
+<form asp-action="Edit" method="post">
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label class="form-label">Дата створення</label>
+        <input class="form-control" value="@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Постачальник</label>
+        <select asp-for="SupplierId" class="form-select" asp-items="ViewBag.Suppliers"></select>
+        <span asp-validation-for="SupplierId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <p class="text-muted">
+        Щоб змінити товари — використовуйте меню "Purchase Order Lines".
+    </p>
+
+    <button type="submit" class="btn btn-warning">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

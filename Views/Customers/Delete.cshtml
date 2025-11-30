@@ -1,0 +1,32 @@
+﻿@model PharmacyChain.Models.Customer
+
+@{
+    ViewData["Title"] = "Видалити клієнта";
+}
+
+<h2>Видалити клієнта</h2>
+
+<div class="alert alert-danger">
+    Ви справді хочете видалити цього клієнта?
+</div>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ПІБ</th>
+        <td>@Model.FullName</td>
+    </tr>
+    <tr>
+        <th>Телефон</th>
+        <td>@Model.Phone</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>@Model.Email</td>
+    </tr>
+</table>
+
+<form asp-action="Delete" method="post">
+    <input asp-for="Id" type="hidden" />
+    <button type="submit" class="btn btn-danger">Видалити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+</form>

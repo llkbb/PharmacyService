@@ -1,0 +1,39 @@
+﻿@model PharmacyChain.Models.Prescription
+
+@{
+    ViewData["Title"] = "Деталі рецепта";
+}
+
+<h2>Деталі рецепта</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Клієнт</th>
+        <td>@Model.Customer?.FullName</td>
+    </tr>
+    <tr>
+        <th>Препарат</th>
+        <td>@Model.Drug?.Name</td>
+    </tr>
+    <tr>
+        <th>Аптека</th>
+        <td>@Model.Pharmacy?.Name</td>
+    </tr>
+    <tr>
+        <th>Лікар</th>
+        <td>@Model.DoctorName</td>
+    </tr>
+    <tr>
+        <th>Дата видачі</th>
+        <td>@Model.DateIssued.ToString("yyyy-MM-dd")</td>
+    </tr>
+    <tr>
+        <th>Дійсний (днів)</th>
+        <td>@Model.ValidDays</td>
+    </tr>
+</table>
+
+<p>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    <a class="btn btn-secondary" asp-action="Index">Назад</a>
+</p>

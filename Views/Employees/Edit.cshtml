@@ -1,0 +1,32 @@
+﻿@model PharmacyChain.Models.Employee
+
+@{
+    ViewData["Title"] = "Редагувати співробітника";
+}
+
+<h2>Редагувати співробітника</h2>
+
+<form asp-action="Edit" method="post">
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label class="form-label">ПІБ</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Посада</label>
+        <input asp-for="Role" class="form-control" />
+        <span asp-validation-for="Role" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-warning">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

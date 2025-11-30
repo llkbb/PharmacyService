@@ -1,0 +1,47 @@
+﻿@model PharmacyChain.Models.Drug
+
+@{
+    ViewData["Title"] = "Додати препарат";
+}
+
+<h2>Додати препарат</h2>
+
+<form asp-action="Create" method="post">
+
+    <div class="mb-3">
+        <label class="form-label">Назва</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Категорія</label>
+        <input asp-for="Category" class="form-control" />
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Виробник</label>
+        <input asp-for="Manufacturer" class="form-control" />
+        <span asp-validation-for="Manufacturer" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Потребує рецепта?</label>
+        <select asp-for="PrescriptionRequired" class="form-select">
+            <option value="true">Так</option>
+            <option value="false">Ні</option>
+        </select>
+        <span asp-validation-for="PrescriptionRequired" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Поріг замовлення</label>
+        <input asp-for="ReorderLevel" class="form-control" />
+        <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Створити</button>
+    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+
+</form>

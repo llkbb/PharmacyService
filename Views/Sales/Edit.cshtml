@@ -1,0 +1,37 @@
+﻿@model PharmacyChain.Models.Sale
+
+@{
+    ViewData["Title"] = "Редагувати продаж";
+}
+
+<h2>Редагувати продаж</h2>
+
+<form asp-action="Edit" method="post">
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label class="form-label">Дата створення</label>
+        <input class="form-control" value="@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Аптека</label>
+        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <span asp-validation-for="PharmacyId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Клієнт (необов'язково)</label>
+        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+            <option value="">Гість</option>
+        </select>
+        <span asp-validation-for="CustomerId" class="text-danger"></span>
+    </div>
+
+    <p class="text-muted">
+        Щоб змінити список товарів або кількість — використовуйте сторінку позицій продажу (SaleLines).
+    </p>
+
+    <button type="submit" class="btn btn-warning">Зберегти</button>
+    <a asp-action="Index" class="btn btn-secondary">Назад</a>
+</form>

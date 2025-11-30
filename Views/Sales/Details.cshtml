@@ -1,0 +1,62 @@
+﻿@model PharmacyChain.Models.Sale
+
+@{
+    ViewData["Title"] = "Деталі продажу";
+}
+
+<h2>Деталі продажу</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Дата</th>
+        <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+    </tr>
+    <tr>
+        <th>Аптека</th>
+        <td>@Model.Pharmacy?.Name</td>
+    </tr>
+    <tr>
+        <th>Клієнт</th>
+        <td>@(Model.Customer?.FullName ?? "Гість")</td>
+    </tr>
+    <tr>
+        <th>Загальна сума</th>
+        <td>@Model.Total</td>
+    </tr>
+</table>
+
+<h4>Позиції продажу</h4>
+
+@if (Model.Lines != null && Model.Lines.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Препарат</th>
+                <th>Кількість</th>
+                <th>Ціна</th>
+                <th>Сума</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var line in Model.Lines)
+            {
+                <tr>
+                    <td>@line.Drug?.Name</td>
+                    <td>@line.Quantity</td>
+                    <td>@line.UnitPrice</td>
+                    <td>@(line.Quantity* line.UnitPrice)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Позицій немає.</p>
+}
+
+<p class="mt-3">
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    <a class="btn btn-secondary" asp-action="Index">Назад до списку</a>
+</p>

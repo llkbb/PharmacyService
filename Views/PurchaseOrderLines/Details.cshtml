@@ -1,0 +1,35 @@
+﻿@model PharmacyChain.Models.PurchaseOrderLine
+
+@{
+    ViewData["Title"] = "Деталі позиції закупівлі";
+}
+
+<h2>Деталі позиції закупівлі</h2>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID Замовлення</th>
+        <td>@Model.PurchaseOrderId</td>
+    </tr>
+    <tr>
+        <th>Препарат</th>
+        <td>@Model.Drug?.Name</td>
+    </tr>
+    <tr>
+        <th>Кількість</th>
+        <td>@Model.Quantity</td>
+    </tr>
+    <tr>
+        <th>Ціна закупівлі</th>
+        <td>@Model.UnitCost</td>
+    </tr>
+    <tr>
+        <th>Сума</th>
+        <td>@(Model.Quantity* Model.UnitCost)</td>
+    </tr>
+</table>
+
+<p>
+    <a class="btn btn-warning" asp-action="Edit" asp-route-id="@Model.Id">Редагувати</a>
+    <a class="btn btn-secondary" asp-action="Index">Назад</a>
+</p>

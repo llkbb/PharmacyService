@@ -1,0 +1,14 @@
+﻿@{
+    ViewData["Title"] = "Сторінка Запитів";
+}
+<h2>Сторінка Запитів</h2>
+<p>Оберіть запит для виконання:</p>
+
+<ul>
+  <li><a asp-action="RxDrugs">Запит 1: Рецептурні препарати (Фільтрація)</a></li>
+  <li><a asp-action="SalesByDate">Запит 2: Продажі за період (Агрегація)</a></li>
+  <li><a asp-action="LowStock">Запит 3: Низькі залишки (JOIN + Фільтр)</a></li>
+  <li><a asp-action="UpdatePrice">Запит 4: Оновити ціну (Модифікація)</a></li>
+  <li><a asp-action="DeleteSupplier">Запит 5: Видалити постачальника (Видалення)</a></li>
+  <li><a asp-action="InsertSale">Запит 6: Додати продаж (Додавання)</a></li>
+</ul>
