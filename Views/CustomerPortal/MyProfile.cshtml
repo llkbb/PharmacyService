@@ -1,0 +1,88 @@
+@model PharmacyChain.Models.Customer
+
+@{
+    ViewData["Title"] = "Мій профіль";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-person-circle"></i> Мій профіль</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Персональна інформація</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="MyProfile">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="@Model.Email" disabled />
+                            <div class="form-text">Email не можна змінити, оскільки він прив'язаний до облікового запису</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label">Повне ім'я</label>
+                            <input asp-for="FullName" class="form-control" required />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label">Телефон</label>
+                            <input asp-for="Phone" class="form-control" placeholder="+380 XX XXX XX XX" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save"></i> Зберегти зміни
+                            </button>
+                            <a href="@Url.Action("Index", "CustomerHome")" class="btn btn-secondary">
+                                Скасувати
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Статистика</h5>
+                </div>
+                <div class="card-body">
+                    <p>
+                        <strong>Замовлень:</strong>
+                        <span class="badge bg-primary">@Model.Sales.Count</span>
+                    </p>
+                    <p>
+                        <strong>Рецептів:</strong>
+                        <span class="badge bg-warning text-dark">@Model.Prescriptions.Count</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Швидкі посилання</h5>
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("MyOrders")" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-box-seam"></i> Мої замовлення
+                    </a>
+                    <a href="@Url.Action("MyPrescriptions")" class="btn btn-outline-warning btn-sm w-100 mb-2">
+                        <i class="bi bi-file-medical"></i> Мої рецепти
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-success btn-sm w-100">
+                        <i class="bi bi-cart"></i> Каталог товарів
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,0 +1,110 @@
+@model PharmacyChain.ViewModels.PharmacistDashboardViewModel
+
+@{
+    ViewData["Title"] = "Робоче місце аптекаря";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-person-badge"></i> Робоче місце аптекаря</h2>
+    <p class="lead">Вітаємо, @User.Identity.Name!</p>
+
+    <!-- Статистика -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-cart-check"></i> Продажі сьогодні</h5>
+                    <h2>@Model.TodaySalesCount</h2>
+                    <p class="mb-0">Сума: @Model.TodaySalesTotal.ToString("F2") грн</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-exclamation-triangle"></i> Низькі залишки</h5>
+                    <h2>@Model.LowStockCount</h2>
+                    <a href="@Url.Action("LowStock")" class="btn btn-light btn-sm mt-2">Переглянути</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-file-medical"></i> Рецепти на перевірку</h5>
+                    <h2>@Model.PendingPrescriptionsCount</h2>
+                    <a href="@Url.Action("PendingPrescriptions")" class="btn btn-light btn-sm mt-2">Переглянути</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="bi bi-hospital"></i> Аптеки</h5>
+                    <h2>@Model.PharmaciesCount</h2>
+                    <a href="@Url.Action("MyInventory")" class="btn btn-light btn-sm mt-2">Склад</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Швидкі дії -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightning"></i> Швидкі дії</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="@Url.Action("Create", "Sales")" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-plus-circle"></i> Новий продаж
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="@Url.Action("MyInventory")" class="btn btn-primary btn-lg w-100">
+                                <i class="bi bi-boxes"></i> Переглянути склад
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="@Url.Action("Index", "Prescriptions")" class="btn btn-info btn-lg w-100">
+                                <i class="bi bi-file-earmark-medical"></i> Рецепти
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Інструкції -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Інструкції для аптекаря</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Основні функції:</h6>
+                    <ul>
+                        <li><strong>Продаж препаратів:</strong> Меню "Продаж" ? "Створити продаж"</li>
+                        <li><strong>Перегляд складу:</strong> Перевіряйте наявність препаратів у вашій аптеці</li>
+                        <li><strong>Робота з рецептами:</strong> Видавайте рецептурні препарати за дійсними рецептами</li>
+                        <li><strong>Контроль залишків:</strong> Відслідковуйте низькі залишки та повідомляйте адміністратора</li>
+                    </ul>
+
+                    <h6 class="mt-3">Важливо:</h6>
+                    <ul>
+                        <li><strong class="text-danger">Рецептурні препарати (Rx)</strong> відпускаються ТІЛЬКИ за рецептом!</li>
+                        <li>Перевіряйте термін дії рецепту перед видачею</li>
+                        <li>При низьких залишках повідомте адміністратора для закупівлі</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+@model IEnumerable<PharmacyChain.Models.Pharmacy>
+
+@{
+    ViewData["Title"] = "Аптеки";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-hospital"></i> Наші аптеки</h2>
+
+    <!-- Пошук -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-6">
+                <input type="text" name="search" class="form-control" 
+                       placeholder="Пошук за назвою або адресою..." value="@ViewBag.Search" />
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Шукати</button>
+            </div>
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Аптеки не знайдені
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var pharmacy in Model)
+            {
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@pharmacy.Name</h5>
+                            <p class="card-text">
+                                <i class="bi bi-geo-alt"></i> @pharmacy.Address
+                            </p>
+                            <p class="card-text">
+                                <i class="bi bi-telephone"></i> @pharmacy.Phone
+                            </p>
+                            <a href="@Url.Action("PharmacyInventory", new { id = pharmacy.Id })" 
+                               class="btn btn-outline-primary">
+                                Переглянути асортимент
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

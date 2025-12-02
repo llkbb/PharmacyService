@@ -1,18 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
+using PharmacyChain.Exceptions;
 using PharmacyChain.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using PharmacyChain.Services;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin,Pharmacist")]
+
     public class InventoryItemsController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly BusinessLogicService _businessLogic;
 
-        public InventoryItemsController(ApplicationDbContext db)
+        public InventoryItemsController(ApplicationDbContext db, BusinessLogicService businessLogic)
         {
             _db = db;
+            _businessLogic = businessLogic;
         }
 
         public async Task<IActionResult> Index()
@@ -74,10 +81,20 @@ namespace PharmacyChain.Controllers.Crud
         {
             if (id != item.Id) return NotFound();
 
-            _db.Update(item);
-            await _db.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                _db.Update(item);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Запас успішно оновлено.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+                ModelState.AddModelError("", "Помилка при збереженні: " + ex.GetBaseException().Message);
+                ViewBag.Pharmacies = new SelectList(_db.Pharmacies, "Id", "Name", item.PharmacyId);
+                ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name", item.DrugId);
+                return View(item);
+            }
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -94,9 +111,28 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _db.InventoryItems.FindAsync(id);
-            _db.InventoryItems.Remove(item);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (item == null)
+            {
+                TempData["Error"] = "Запас не знайдено.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // Перевірити бізнес-правила перед видаленням
+                await _businessLogic.ValidateCanDeleteInventoryItemAsync(id);
+
+                _db.InventoryItems.Remove(item);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Запас успішно видалено.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (BusinessLogicException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
         }
     }
 }

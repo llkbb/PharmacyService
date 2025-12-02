@@ -7,7 +7,6 @@
 <h2>Створити клієнта</h2>
 
 <form asp-action="Create" method="post">
-
     <div class="mb-3">
         <label class="form-label">ПІБ</label>
         <input asp-for="FullName" class="form-control" />
@@ -26,7 +25,7 @@
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success">Створити</button>
+    <button type="submit" class="btn btn-primary">Створити</button>
     <a asp-action="Index" class="btn btn-secondary">Назад</a>
 
 </form>

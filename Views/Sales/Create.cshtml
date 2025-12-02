@@ -1,31 +1,45 @@
-﻿@model PharmacyChain.Models.Sale
-
-@{
+﻿@{
     ViewData["Title"] = "Створити продаж";
 }
 
 <h2>Створити продаж</h2>
 
 <form asp-action="Create" method="post">
-
-    <div class="mb-3">
-        <label class="form-label">Аптека</label>
-        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
-        <span asp-validation-for="PharmacyId" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Клієнт (необов'язково)</label>
-        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
-            <option value="">Гість</option>
+    <div class="form-group">
+        <label>Аптека</label>
+        <select name="pharmacyId" class="form-control">
+            @foreach (var p in ViewBag.Pharmacies)
+            {
+                <option value="@p.Id">@p.Name</option>
+            }
         </select>
-        <span asp-validation-for="CustomerId" class="text-danger"></span>
     </div>
 
-    <p class="text-muted">
-        Позиції продажу (товари) додаються окремо після створення продажу.
-    </p>
+    <div class="form-group mt-3">
+        <label>Клієнт (необов'язково)</label>
+        <select name="customerId" class="form-control">
+            <option value="">Без клієнта</option>
+            @foreach (var c in ViewBag.Customers)
+            {
+                <option value="@c.Id">@c.FullName</option>
+            }
+        </select>
+    </div>
 
-    <button type="submit" class="btn btn-success">Створити</button>
-    <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
+    <div class="form-group mt-3">
+        <label>Препарат</label>
+        <select name="drugId" class="form-control">
+            @foreach (var d in ViewBag.Drugs)
+            {
+                <option value="@d.Id">@d.Name</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mt-3">
+        <label>Кількість</label>
+        <input type="number" name="quantity" class="form-control" min="1" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Створити</button>
 </form>

@@ -1,7 +1,7 @@
 ﻿@model PharmacyChain.Models.SaleLine
 
 @{
-    ViewData["Title"] = "Додати позицію продажу";
+    ViewData["Title"] = "Додати позицію";
 }
 
 <h2>Додати позицію продажу</h2>
@@ -32,7 +32,6 @@
         <span asp-validation-for="UnitPrice" class="text-danger"></span>
     </div>
 
-    <button type="submit" class="btn btn-success">Створити</button>
+    <button type="submit" class="btn btn-success">Додати</button>
     <a asp-action="Index" class="btn btn-secondary">Назад</a>
-
 </form>

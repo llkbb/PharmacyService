@@ -1,18 +1,62 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
+using PharmacyChain.Exceptions;
 using PharmacyChain.Models;
+using PharmacyChain.Services;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
+
     public class DrugsController : Controller
     {
-        private readonly ApplicationDbContext _db;
-        public DrugsController(ApplicationDbContext db) => _db = db;
 
-        public async Task<IActionResult> Index()
+        private readonly ApplicationDbContext _db;
+        private readonly BusinessLogicService _businessLogic;
+
+
+        public DrugsController(ApplicationDbContext db, BusinessLogicService businessLogic)
         {
-            return View(await _db.Drugs.ToListAsync());
+            _db = db;
+            _businessLogic = businessLogic;
+        }
+
+
+        public async Task<IActionResult> Index(string? search, string? category, bool? prescriptionRequired)
+        {
+            var query = _db.Drugs.AsQueryable();
+
+            // Пошук за назвою або описом
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(d => d.Name.Contains(search) || d.Description.Contains(search));
+                ViewBag.Search = search;
+            }
+
+            // Фільтрація за категорією
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                query = query.Where(d => d.Category == category);
+                ViewBag.Category = category;
+            }
+
+            // Фільтрація за рецептурністю
+            if (prescriptionRequired.HasValue)
+            {
+                query = query.Where(d => d.PrescriptionRequired == prescriptionRequired.Value);
+                ViewBag.PrescriptionRequired = prescriptionRequired.Value;
+            }
+
+            // Список категорій для фільтру
+            ViewBag.Categories = await _db.Drugs
+                .Select(d => d.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToListAsync();
+
+            return View(await query.OrderBy(d => d.Name).ToListAsync());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -61,9 +105,28 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _db.Drugs.FindAsync(id);
-            _db.Drugs.Remove(item);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (item == null)
+            {
+                TempData["Error"] = "Препарат не знайдено.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // Перевірити бізнес-правила перед видаленням
+                await _businessLogic.ValidateCanDeleteDrugAsync(id);
+
+                _db.Drugs.Remove(item);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Препарат успішно видалено.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (BusinessLogicException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
         }
     }
 }

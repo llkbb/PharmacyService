@@ -1,0 +1,118 @@
+@model PharmacyChain.ViewModels.CustomerPurchaseViewModel
+
+@{
+    ViewData["Title"] = "Оформлення покупки";
+    var drug = (PharmacyChain.Models.Drug)ViewBag.Drug;
+    var availability = (List<PharmacyChain.Models.InventoryItem>)ViewBag.Availability;
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-cart-plus"></i> Оформлення покупки</h2>
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h4>@drug.Name</h4>
+                    <p class="text-muted">@drug.Description</p>
+                    <h5 class="text-success">Ціна: @drug.Price.ToString("F2") грн</h5>
+
+                    @if (drug.PrescriptionRequired)
+                    {
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            Цей препарат відпускається за рецептом. Система автоматично перевірить наявність дійсного рецепту.
+                        </div>
+                    }
+
+                    <form method="post" asp-action="Purchase">
+                        <input type="hidden" asp-for="DrugId" />
+                        <input type="hidden" asp-for="DrugName" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Аптека</label>
+                            <select asp-for="PharmacyId" class="form-select" required>
+                                @foreach (var item in availability)
+                                {
+                                    <option value="@item.PharmacyId">
+                                        @item.Pharmacy.Name - В наявності: @item.Quantity шт. (@item.UnitPrice.ToString("F2") грн)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="PharmacyId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Кількість</label>
+                            <input type="number" asp-for="Quantity" class="form-control" min="1" max="100" required />
+                            <span asp-validation-for="Quantity" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Спосіб оплати</label>
+                            <select asp-for="PaymentMethod" class="form-select" required>
+                                <option value="Cash">Готівка при отриманні</option>
+                                <option value="Card">Банківська карта (онлайн)</option>
+                                <option value="Online">Електронний гаманець</option>
+                            </select>
+                            <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                При виборі готівки оплата відбудеться при отриманні в аптеці.
+                                Інші способи - миттєва онлайн оплата.
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Підтвердити та оплатити
+                            </button>
+                            <a href="@Url.Action("DrugDetails", new { id = drug.Id })" class="btn btn-secondary">
+                                Скасувати
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Інформація</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Виробник:</strong> @drug.Manufacturer</p>
+                    <p><strong>Категорія:</strong> @drug.Category</p>
+                    @if (drug.PrescriptionRequired)
+                    {
+                        <p class="text-warning">
+                            <i class="bi bi-prescription"></i>
+                            <strong>Рецептурний препарат</strong>
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-credit-card"></i> Безпека оплати</h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">
+                        <i class="bi bi-shield-check"></i>
+                        Всі платежі захищені SSL-шифруванням
+                    </p>
+                    <p class="small">
+                        <i class="bi bi-lock"></i>
+                        Дані карти не зберігаються на нашому сервері
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

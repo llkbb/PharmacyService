@@ -7,12 +7,12 @@
 <h2>Видалити позицію закупівлі</h2>
 
 <div class="alert alert-danger">
-    Ви дійсно хочете видалити цей товар із закупівлі?
+    Ви дійсно хочете видалити цю позицію?
 </div>
 
 <table class="table table-bordered">
     <tr>
-        <th>ID Замовлення</th>
+        <th>Закупівля ID</th>
         <td>@Model.PurchaseOrderId</td>
     </tr>
     <tr>
@@ -24,17 +24,17 @@
         <td>@Model.Quantity</td>
     </tr>
     <tr>
-        <th>Ціна закупівлі</th>
-        <td>@Model.UnitCost</td>
+        <th>Вартість за ед.</th>
+        <td>₴ @Model.UnitCost.ToString("F2")</td>
     </tr>
     <tr>
         <th>Сума</th>
-        <td>@(Model.Quantity* Model.UnitCost)</td>
+        <td class="fw-bold">₴ @(Model.Quantity * Model.UnitCost).ToString("F2")</td>
     </tr>
 </table>
 
 <form asp-action="Delete" method="post">
     <input asp-for="Id" type="hidden" />
-    <button class="btn btn-danger">Видалити</button>
+    <button type="submit" class="btn btn-danger">Видалити</button>
     <a asp-action="Index" class="btn btn-secondary">Скасувати</a>
 </form>

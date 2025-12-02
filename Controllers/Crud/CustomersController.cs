@@ -1,14 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
+using PharmacyChain.Exceptions;
 using PharmacyChain.Models;
+using PharmacyChain.Services;
+
+
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
     public class CustomersController : Controller
     {
         private readonly ApplicationDbContext _db;
-        public CustomersController(ApplicationDbContext db) => _db = db;
+        private readonly BusinessLogicService _businessLogic;
+
+        public CustomersController(ApplicationDbContext db, BusinessLogicService businessLogic)
+        {
+            _db = db;
+            _businessLogic = businessLogic;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -54,16 +66,35 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> Delete(int? id)
         {
             var item = await _db.Customers.FirstOrDefaultAsync(m => m.Id == id);
-            return item == null ? NotFound() : View(item);
+            return View(item);
         }
 
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _db.Customers.FindAsync(id);
-            _db.Customers.Remove(item);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (item == null)
+            {
+                TempData["Error"] = "Клієнта не знайдено.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // Перевірити бізнес-правила перед видаленням
+                await _businessLogic.ValidateCanDeleteCustomerAsync(id);
+
+                _db.Customers.Remove(item);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Клієнта успішно видалено.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (BusinessLogicException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
         }
     }
 }
