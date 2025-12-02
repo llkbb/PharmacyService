@@ -1,16 +1,26 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
+using PharmacyChain.Exceptions;
 using PharmacyChain.Models;
+using PharmacyChain.Services;
 using PharmacyChain.ViewModels;
 
 namespace PharmacyChain.Controllers
 {
+    [Authorize(Roles = "Admin,Pharmacist")]
     public class QueriesController : Controller
     {
         private readonly ApplicationDbContext _db;
-        public QueriesController(ApplicationDbContext db) => _db = db;
+        private readonly BusinessLogicService _businessLogic;
+
+        public QueriesController(ApplicationDbContext db, BusinessLogicService businessLogic)
+        {
+            _db = db;
+            _businessLogic = businessLogic;
+        }
 
         // Головна сторінка зі списком кнопок
         public IActionResult Index() => View();
@@ -69,15 +79,26 @@ namespace PharmacyChain.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdatePrice(int pharmacyId, int drugId, decimal newPrice)
         {
-            var rows = await _db.InventoryItems
-                .Where(i => i.PharmacyId == pharmacyId && i.DrugId == drugId)
-                .ToListAsync();
+            try
+            {
+                // Перевірити бізнес-правила
+                await _businessLogic.ValidateCanUpdateDrugPriceAsync(pharmacyId, drugId, newPrice);
 
-            rows.ForEach(i => i.UnitPrice = newPrice);
-            await _db.SaveChangesAsync();
+                var rows = await _db.InventoryItems
+                    .Where(i => i.PharmacyId == pharmacyId && i.DrugId == drugId)
+                    .ToListAsync();
 
-            TempData["msg"] = $"Оновлено {rows.Count} запис(ів).";
-            return RedirectToAction(nameof(UpdatePrice));
+                rows.ForEach(i => i.UnitPrice = newPrice);
+                await _db.SaveChangesAsync();
+
+                TempData["msg"] = $"✅ Оновлено {rows.Count} запис(ів). Нова ціна: ₴{newPrice:F2}";
+                return RedirectToAction(nameof(UpdatePrice));
+            }
+            catch (BusinessLogicException ex)
+            {
+                TempData["msg"] = $"❌ {ex.Message}";
+                return RedirectToAction(nameof(UpdatePrice));
+            }
         }
 
         // 5) DELETE: видалити постачальника, якщо немає замовлень
@@ -131,78 +152,78 @@ namespace PharmacyChain.Controllers
             return View(new SaleCreateSimpleVm { PharmacyId = firstPharmacyId, Qty = 1 });
         }
 
-    // AJAX-допоміжна: отримати валідні препарати для обраної аптеки
-    [HttpGet]
-    public async Task<IActionResult> GetDrugsForPharmacy(int pharmacyId)
-    {
-        var drugs = await _db.InventoryItems
-            .Where(i => i.PharmacyId == pharmacyId && i.Quantity > 0)
-            .Include(i => i.Drug)
-            .OrderBy(i => i.Drug.Name)
-            .Select(i => new { i.Drug.Id, i.Drug.Name })
-            .ToListAsync();
-        return Json(drugs);
+        // AJAX-допоміжна: отримати валідні препарати для обраної аптеки
+        [HttpGet]
+        public async Task<IActionResult> GetDrugsForPharmacy(int pharmacyId)
+        {
+            var drugs = await _db.InventoryItems
+                .Where(i => i.PharmacyId == pharmacyId && i.Quantity > 0)
+                .Include(i => i.Drug)
+                .OrderBy(i => i.Drug.Name)
+                .Select(i => new { i.Drug.Id, i.Drug.Name })
+                .ToListAsync();
+            return Json(drugs);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> InsertSale(SaleCreateSimpleVm vm)
+        {
+            // Повторно заповнюємо списки, щоб на помилках не ламалось
+            ViewBag.Pharmacies = new SelectList(await _db.Pharmacies.OrderBy(p => p.Name).ToListAsync(), "Id", "Name");
+            var validDrugs = await _db.InventoryItems
+                .Where(i => i.PharmacyId == vm.PharmacyId && i.Quantity > 0)
+                .Include(i => i.Drug).OrderBy(i => i.Drug.Name).ToListAsync();
+            ViewBag.Drugs = new SelectList(validDrugs.Select(i => i.Drug), "Id", "Name");
+
+            if (!ModelState.IsValid) return View(vm);
+
+            // 1) Перевіряємо, що існує сам препарат і аптека
+            if (!await _db.Pharmacies.AnyAsync(p => p.Id == vm.PharmacyId))
+            { ModelState.AddModelError("", "Обрана аптека не існує."); return View(vm); }
+            if (!await _db.Drugs.AnyAsync(d => d.Id == vm.DrugId))
+            { ModelState.AddModelError("", "Обраний препарат не існує."); return View(vm); }
+
+            // 2) Ключова перевірка: є запис у InventoryItems для цієї пари
+            var inventory = await _db.InventoryItems
+                .FirstOrDefaultAsync(i => i.PharmacyId == vm.PharmacyId && i.DrugId == vm.DrugId);
+
+            if (inventory == null)
+            {
+                ModelState.AddModelError("", "У цій аптеці такого препарату немає на складі.");
+                return View(vm);
+            }
+            if (inventory.Quantity < vm.Qty)
+            {
+                ModelState.AddModelError("", $"Недостатній залишок. Доступно: {inventory.Quantity}.");
+                return View(vm);
+            }
+
+            // 3) Ціну краще брати з інвентарю (щоб не ввести невалідну)
+            var price = vm.Price > 0 ? vm.Price : inventory.UnitPrice;
+
+            // 4) Створюємо продаж + списуємо склад в ОДНІЙ транзакції
+            using var tx = await _db.Database.BeginTransactionAsync();
+            try
+            {
+                var sale = new Sale { PharmacyId = vm.PharmacyId, CreatedAt = DateTime.UtcNow };
+                sale.Lines.Add(new SaleLine { DrugId = vm.DrugId, Quantity = vm.Qty, UnitPrice = price });
+                _db.Sales.Add(sale);
+
+                inventory.Quantity -= vm.Qty;
+
+                await _db.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                TempData["msg"] = $"Продаж #{sale.Id} додано. Списано {vm.Qty} шт.";
+                return RedirectToAction(nameof(InsertSale));
+            }
+            catch (DbUpdateException ex)
+            {
+                await tx.RollbackAsync();
+                ModelState.AddModelError("", "Помилка збереження: " + ex.GetBaseException().Message);
+                return View(vm);
+            }
+        }
+
     }
-
-    [HttpPost]
-    public async Task<IActionResult> InsertSale(SaleCreateSimpleVm vm)
-    {
-        // Повторно заповнюємо списки, щоб на помилках не ламалось
-        ViewBag.Pharmacies = new SelectList(await _db.Pharmacies.OrderBy(p => p.Name).ToListAsync(), "Id", "Name");
-        var validDrugs = await _db.InventoryItems
-            .Where(i => i.PharmacyId == vm.PharmacyId && i.Quantity > 0)
-            .Include(i => i.Drug).OrderBy(i => i.Drug.Name).ToListAsync();
-        ViewBag.Drugs = new SelectList(validDrugs.Select(i => i.Drug), "Id", "Name");
-
-        if (!ModelState.IsValid) return View(vm);
-
-        // 1) Перевіряємо, що існує сам препарат і аптека
-        if (!await _db.Pharmacies.AnyAsync(p => p.Id == vm.PharmacyId))
-        { ModelState.AddModelError("", "Обраної аптеки не існує."); return View(vm); }
-        if (!await _db.Drugs.AnyAsync(d => d.Id == vm.DrugId))
-        { ModelState.AddModelError("", "Обраного препарату не існує."); return View(vm); }
-
-        // 2) Ключова перевірка: є запис у InventoryItems для цієї пари
-        var inventory = await _db.InventoryItems
-            .FirstOrDefaultAsync(i => i.PharmacyId == vm.PharmacyId && i.DrugId == vm.DrugId);
-
-        if (inventory == null)
-        {
-            ModelState.AddModelError("", "У цій аптеці такого препарату немає на складі.");
-            return View(vm);
-        }
-        if (inventory.Quantity < vm.Qty)
-        {
-            ModelState.AddModelError("", $"Недостатній залишок. Доступно: {inventory.Quantity}.");
-            return View(vm);
-        }
-
-        // 3) Ціну краще брати з інвентарю (щоб не ввести невалідну)
-        var price = vm.Price > 0 ? vm.Price : inventory.UnitPrice;
-
-        // 4) Створюємо продаж + списуємо склад в ОДНІЙ транзакції
-        using var tx = await _db.Database.BeginTransactionAsync();
-        try
-        {
-            var sale = new Sale { PharmacyId = vm.PharmacyId, CreatedAt = DateTime.UtcNow };
-            sale.Lines.Add(new SaleLine { DrugId = vm.DrugId, Quantity = vm.Qty, UnitPrice = price });
-            _db.Sales.Add(sale);
-
-            inventory.Quantity -= vm.Qty;
-
-            await _db.SaveChangesAsync();
-            await tx.CommitAsync();
-
-            TempData["msg"] = $"Продаж #{sale.Id} додано. Списано {vm.Qty} шт.";
-            return RedirectToAction(nameof(InsertSale));
-        }
-        catch (DbUpdateException ex)
-        {
-            await tx.RollbackAsync();
-            ModelState.AddModelError("", "Помилка збереження: " + ex.GetBaseException().Message);
-            return View(vm);
-        }
-    }
-
-}
 }

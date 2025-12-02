@@ -1,0 +1,158 @@
+@model IEnumerable<PharmacyChain.Models.Sale>
+
+@{
+    ViewData["Title"] = "Мої замовлення";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-box-seam"></i> Мої замовлення</h2>
+    <p class="text-muted">Клієнт: <strong>@ViewBag.CustomerName</strong></p>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> У вас ще немає замовлень
+        </div>
+        <a href="@Url.Action("Index")" class="btn btn-primary">Перейти до каталогу</a>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>№ Замовлення</th>
+                        <th>Дата</th>
+                        <th>Аптека</th>
+                        <th>Товари</th>
+                        <th>Сума</th>
+                        <th>Оплата</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sale in Model)
+                    {
+                        <tr>
+                            <td><strong>#@sale.Id</strong></td>
+                            <td>@sale.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@sale.Pharmacy.Name</td>
+                            <td>
+                                @foreach (var line in sale.Lines)
+                                {
+                                    <div>
+                                        @line.Drug.Name ? @line.Quantity шт.
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-success"><strong>@sale.Total.ToString("F2") грн</strong></td>
+                            <td>
+                                @if (sale.PaymentStatus == "Paid")
+                                {
+                                    <span class="badge bg-success">Оплачено</span>
+                                    <br />
+                                    <small class="text-muted">@sale.PaymentMethod</small>
+                                }
+                                else if (sale.PaymentStatus == "Pending")
+                                {
+                                    <span class="badge bg-warning text-dark">Очікує оплати</span>
+                                    <br />
+                                    <small class="text-muted">@sale.PaymentMethod</small>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Скасовано</span>
+                                }
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                        data-bs-toggle="modal" data-bs-target="#orderModal@(sale.Id)">
+                                    Деталі
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal для деталей -->
+                        <div class="modal fade" id="orderModal@(sale.Id)" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Замовлення #@sale.Id</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p><strong>Дата:</strong> @sale.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                                        <p><strong>Аптека:</strong> @sale.Pharmacy.Name</p>
+                                        <p><strong>Адреса:</strong> @sale.Pharmacy.Address</p>
+                                        
+                                        <hr />
+                                        
+                                        <h6>Оплата:</h6>
+                                        <p>
+                                            <strong>Статус:</strong>
+                                            @if (sale.PaymentStatus == "Paid")
+                                            {
+                                                <span class="badge bg-success">Оплачено</span>
+                                            }
+                                            else if (sale.PaymentStatus == "Pending")
+                                            {
+                                                <span class="badge bg-warning text-dark">Очікує оплати</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">Скасовано</span>
+                                            }
+                                        </p>
+                                        <p><strong>Спосіб:</strong> @sale.PaymentMethod</p>
+                                        @if (!string.IsNullOrEmpty(sale.TransactionId))
+                                        {
+                                            <p><strong>ID транзакції:</strong> @sale.TransactionId</p>
+                                        }
+                                        @if (sale.PaidAt.HasValue)
+                                        {
+                                            <p><strong>Оплачено:</strong> @sale.PaidAt.Value.ToString("dd.MM.yyyy HH:mm")</p>
+                                        }
+                                        
+                                        <hr />
+                                        
+                                        <h6>Товари:</h6>
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Назва</th>
+                                                    <th>Кількість</th>
+                                                    <th>Ціна</th>
+                                                    <th>Сума</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var line in sale.Lines)
+                                                {
+                                                    <tr>
+                                                        <td>@line.Drug.Name</td>
+                                                        <td>@line.Quantity</td>
+                                                        <td>@line.UnitPrice.ToString("F2") грн</td>
+                                                        <td>@((line.Quantity * line.UnitPrice).ToString("F2")) грн</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" class="text-end"><strong>Всього:</strong></td>
+                                                    <td><strong>@sale.Total.ToString("F2") грн</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрити</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

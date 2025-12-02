@@ -4,40 +4,75 @@
     ViewData["Title"] = "Препарати";
 }
 
-<h2>Препарати</h2>
+<div class="container mt-4">
+    <h2>Препарати</h2>
 
-<p>
-    <a class="btn btn-primary" asp-action="Create">Додати препарат</a>
-</p>
+    <!-- Пошук та фільтри -->
+    <form method="get" class="mb-4">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Пошук за назвою або описом..." value="@ViewBag.Search" />
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">Всі категорії</option>
+                    @foreach (var cat in (List<string>)ViewBag.Categories)
+                    {
+                        <option value="@cat" selected="@(ViewBag.Category == cat)">@cat</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="prescriptionRequired" class="form-select">
+                    <option value="">Всі типи</option>
+                    <option value="false" selected="@(ViewBag.PrescriptionRequired == false)">Безрецептурні</option>
+                    <option value="true" selected="@(ViewBag.PrescriptionRequired == true)">Рецептурні</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Шукати</button>
+            </div>
+        </div>
+    </form>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Назва</th>
-            <th>Категорія</th>
-            <th>Виробник</th>
-            <th>Рецепт?</th>
-            <th>Поріг замовлення</th>
-            <th></th>
-        </tr>
-    </thead>
+    @if (ViewBag.Search != null || ViewBag.Category != null || ViewBag.PrescriptionRequired != null)
+    {
+        <div class="mb-3">
+            <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-secondary">Скинути фільтри</a>
+        </div>
+    }
 
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <a class="btn btn-success mb-3" asp-action="Create">Додати препарат</a>
+
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>@item.Name</td>
-                <td>@item.Category</td>
-                <td>@item.Manufacturer</td>
-                <td>@(item.PrescriptionRequired ? "Так" : "Ні")</td>
-                <td>@item.ReorderLevel</td>
-
-                <td>
-                    <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
-                    <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
-                    <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
-                </td>
+                <th>Назва</th>
+                <th>Категорія</th>
+                <th>Виробник</th>
+                <th>Рецепт?</th>
+                <th>Поріг замовлення</th>
+                <th></th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Category</td>
+                    <td>@item.Manufacturer</td>
+                    <td>@(item.PrescriptionRequired ? "Так" : "Ні")</td>
+                    <td>@item.ReorderLevel</td>
+
+                    <td>
+                        <a class="btn btn-info btn-sm" asp-action="Details" asp-route-id="@item.Id">Деталі</a>
+                        <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@item.Id">Редагувати</a>
+                        <a class="btn btn-danger btn-sm" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

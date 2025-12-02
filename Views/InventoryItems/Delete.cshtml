@@ -29,7 +29,7 @@
     </tr>
     <tr>
         <th>Термін придатності</th>
-        <td>@Model.ExpirationDate?.ToString("yyyy-MM-dd")</td>
+        <td>@(Model.ExpirationDate?.ToString("yyyy-MM-dd") ?? "Не вказано")</td>
     </tr>
 </table>
 

@@ -1,8 +1,159 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model PharmacyChain.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard - PharmacyChain";
+    var dashboard = Model ?? new PharmacyChain.ViewModels.DashboardViewModel();
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1>📊 Панель управління</h1>
+            <p class="text-muted">Вітаємо, @User.Identity?.Name!</p>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Аптеки</h5>
+                    <p class="card-text display-6">@dashboard.TotalPharmacies</p>
+                    <a asp-controller="Pharmacies" asp-action="Index" class="btn btn-light btn-sm">Переглянути</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Препарати</h5>
+                    <p class="card-text display-6">@dashboard.TotalDrugs</p>
+                    <a asp-controller="Drugs" asp-action="Index" class="btn btn-light btn-sm">Переглянути</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Клієнти</h5>
+                    <p class="card-text display-6">@dashboard.TotalCustomers</p>
+                    <a asp-controller="Customers" asp-action="Index" class="btn btn-light btn-sm">Переглянути</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h5 class="card-title">Постачальники</h5>
+                    <p class="card-text display-6">@dashboard.TotalSuppliers</p>
+                    <a asp-controller="Suppliers" asp-action="Index" class="btn btn-dark btn-sm">Переглянути</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Today & Low Stock Alert -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">💰 Продажі сьогодні</h5>
+                    <p class="card-text display-5 text-success">₴ @dashboard.SalesToday.ToString("F2")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <h5 class="card-title">⚠️ Низькі залишки</h5>
+                    <p class="card-text display-5 text-danger">@dashboard.LowStockCount</p>
+                    <a asp-controller="Queries" asp-action="LowStock" class="btn btn-danger btn-sm">Переглянути</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 5 Drugs -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">🔥 Топ 5 препаратів</h5>
+                </div>
+                <div class="card-body">
+                    @if (dashboard.TopDrugs.Any())
+                    {
+                        <ol class="list-group list-group-numbered">
+                            @foreach (var drug in dashboard.TopDrugs)
+                            {
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>@drug.Name</span>
+                                    <span class="badge bg-primary">@drug.Quantity</span>
+                                </li>
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Немає даних</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Sales -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">📋 Останні продажі</h5>
+                </div>
+                <div class="card-body">
+                    @if (dashboard.RecentSales.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Аптека</th>
+                                        <th>Клієнт</th>
+                                        <th class="text-end">Сума</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sale in dashboard.RecentSales)
+                                    {
+                                        <tr>
+                                            <td>@sale.PharmacyName</td>
+                                            <td>@sale.CustomerName</td>
+                                            <td class="text-end">₴ @sale.Total.ToString("F2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <a asp-controller="Sales" asp-action="Index" class="btn btn-sm btn-outline-primary w-100 mt-2">Всі продажі →</a>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Немає даних</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .card {
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+</style>

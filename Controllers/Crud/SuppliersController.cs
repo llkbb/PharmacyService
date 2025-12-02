@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
 using PharmacyChain.Models;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
+
     public class SuppliersController : Controller
     {
         private readonly ApplicationDbContext _db;

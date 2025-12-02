@@ -16,14 +16,23 @@
 
     <div class="mb-3">
         <label class="form-label">Аптека</label>
-        <select asp-for="PharmacyId" class="form-select" asp-items="ViewBag.Pharmacies"></select>
+        <select asp-for="PharmacyId" class="form-select">
+            @foreach (var p in ViewBag.Pharmacies)
+            {
+                <option value="@p.Id" selected="@(Model.PharmacyId == p.Id)">@p.Name</option>
+            }
+        </select>
         <span asp-validation-for="PharmacyId" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Клієнт (необов'язково)</label>
-        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+        <select asp-for="CustomerId" class="form-select">
             <option value="">Гість</option>
+            @foreach (var c in ViewBag.Customers)
+            {
+                <option value="@c.Id" selected="@(Model.CustomerId == c.Id)">@c.FullName</option>
+            }
         </select>
         <span asp-validation-for="CustomerId" class="text-danger"></span>
     </div>

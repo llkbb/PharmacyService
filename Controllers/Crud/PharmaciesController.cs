@@ -1,15 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
+using PharmacyChain.Exceptions;
 using PharmacyChain.Models;
+using PharmacyChain.Services;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
+
     public class PharmaciesController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly BusinessLogicService _businessLogic;
 
-        public PharmaciesController(ApplicationDbContext db) => _db = db;
+        public PharmaciesController(ApplicationDbContext db, BusinessLogicService businessLogic)
+        {
+            _db = db;
+            _businessLogic = businessLogic;
+        }
 
         public async Task<IActionResult> Index()
         {
@@ -64,9 +74,28 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var p = await _db.Pharmacies.FindAsync(id);
-            _db.Pharmacies.Remove(p);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (p == null)
+            {
+                TempData["Error"] = "Аптеку не знайдено.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                // Перевірити бізнес-правила перед видаленням
+                await _businessLogic.ValidateCanDeletePharmacyAsync(id);
+
+                _db.Pharmacies.Remove(p);
+                await _db.SaveChangesAsync();
+
+                TempData["Success"] = "Аптеку успішно видалено.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (BusinessLogicException ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Delete), new { id });
+            }
         }
     }
 }

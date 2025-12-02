@@ -1,88 +1,172 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
 using PharmacyChain.Models;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
     public class SaleLinesController : Controller
     {
         private readonly ApplicationDbContext _db;
-        public SaleLinesController(ApplicationDbContext db) => _db = db;
+
+        public SaleLinesController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
 
         public async Task<IActionResult> Index()
         {
-            var lines = _db.SaleLines
-                .Include(l => l.Sale)
-                .Include(l => l.Drug);
-            return View(await lines.ToListAsync());
-        }
-
-        public async Task<IActionResult> Details(int? id)
-        {
-            var item = await _db.SaleLines
+            var lines = await _db.SaleLines
                 .Include(l => l.Sale)
                 .Include(l => l.Drug)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            return item == null ? NotFound() : View(item);
+                .ToListAsync();
+
+            return View(lines);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var line = await _db.SaleLines
+                .Include(l => l.Sale)
+                .Include(l => l.Drug)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
+            return line == null ? NotFound() : View(line);
         }
 
         public IActionResult Create()
         {
-            ViewBag.Sales = new SelectList(_db.Sales, "Id", "Id");
-            ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name");
+            ViewBag.Drugs = _db.Drugs.ToList();
+            ViewBag.Sales = _db.Sales.ToList();
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(SaleLine item)
+        public async Task<IActionResult> Create(int saleId, int drugId, int quantity)
         {
-            if (ModelState.IsValid)
+            if (quantity <= 0)
+                ModelState.AddModelError("", "Кількість має бути більшою за 0.");
+
+            var sale = await _db.Sales.FindAsync(saleId);
+            if (sale == null)
+                ModelState.AddModelError("", "Продаж не знайдено.");
+
+            var drug = await _db.Drugs.FindAsync(drugId);
+            if (drug == null)
+                ModelState.AddModelError("", "Препарат не знайдено.");
+
+            var item = await _db.InventoryItems
+                .FirstOrDefaultAsync(i => i.DrugId == drugId && i.PharmacyId == sale!.PharmacyId);
+
+            if (item == null)
+                ModelState.AddModelError("", "У цій аптеці немає такого препарату.");
+
+            else if (item.Quantity < quantity)
+                ModelState.AddModelError("", "Недостатньо товару на складі.");
+
+            if (!ModelState.IsValid)
             {
-                _db.SaleLines.Add(item);
-                await _db.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ViewBag.Drugs = _db.Drugs.ToList();
+                ViewBag.Sales = _db.Sales.ToList();
+                return View();
             }
-            return View(item);
-        }
 
-        public async Task<IActionResult> Edit(int? id)
-        {
-            var item = await _db.SaleLines.FindAsync(id);
+            using var transaction = await _db.Database.BeginTransactionAsync();
 
-            ViewBag.Sales = new SelectList(_db.Sales, "Id", "Id");
-            ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name");
+            try
+            {
+                var line = new SaleLine
+                {
+                    SaleId = saleId,
+                    DrugId = drugId,
+                    Quantity = quantity,
+                    UnitPrice = item!.UnitPrice
+                };
 
-            return item == null ? NotFound() : View(item);
-        }
+                _db.SaleLines.Add(line);
 
-        [HttpPost]
-        public async Task<IActionResult> Edit(int id, SaleLine item)
-        {
-            if (id != item.Id) return NotFound();
+                item.Quantity -= quantity;
+                _db.InventoryItems.Update(item);
 
-            _db.Update(item);
-            await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Edit(int id)
         {
-            var item = await _db.SaleLines
+            var line = await _db.SaleLines
                 .Include(l => l.Drug)
                 .Include(l => l.Sale)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(l => l.Id == id);
 
-            return item == null ? NotFound() : View(item);
+            if (line == null) return NotFound();
+
+            ViewBag.Drugs = _db.Drugs.ToList();
+            ViewBag.Sales = _db.Sales.ToList();
+
+            return View(line);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, SaleLine line)
+        {
+            if (id != line.Id) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                _db.Update(line);
+                await _db.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewBag.Drugs = _db.Drugs.ToList();
+            ViewBag.Sales = _db.Sales.ToList();
+
+            return View(line);
+        }
+
+        public async Task<IActionResult> Delete(int id)
+        {
+            var line = await _db.SaleLines
+                .Include(l => l.Drug)
+                .Include(l => l.Sale)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
+            return line == null ? NotFound() : View(line);
         }
 
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var item = await _db.SaleLines.FindAsync(id);
-            _db.SaleLines.Remove(item);
+            var line = await _db.SaleLines
+                .Include(l => l.Sale)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
+            if (line == null)
+                return NotFound();
+
+            var item = await _db.InventoryItems
+                .FirstOrDefaultAsync(i => i.DrugId == line.DrugId && i.PharmacyId == line.Sale.PharmacyId);
+
+            if (item != null)
+            {
+                item.Quantity += line.Quantity;
+                _db.InventoryItems.Update(item);
+            }
+
+            _db.SaleLines.Remove(line);
             await _db.SaveChangesAsync();
+
             return RedirectToAction(nameof(Index));
         }
     }

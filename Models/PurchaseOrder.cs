@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Linq;
 
 namespace PharmacyChain.Models
 {
@@ -10,9 +11,18 @@ namespace PharmacyChain.Models
         public Supplier Supplier { get; set; } = default!;
         [Required] public int PharmacyId { get; set; }
         public Pharmacy Pharmacy { get; set; } = default!;
-        [StringLength(50)] public string Status { get; set; } = "Draft"; // Draft/Sent/Received/Cancelled
+        [StringLength(50)] public string Status { get; set; } = "Draft"; // Draft/Sent/InTransit/Delivered/Cancelled
+
+        // Відстеження доставки
+        public DateTime? SentDate { get; set; }
+        public DateTime? DeliveryDate { get; set; }
+        public DateTime? ExpectedDeliveryDate { get; set; }
+        [StringLength(200)] public string? TrackingNumber { get; set; }
+        [StringLength(500)] public string? DeliveryNotes { get; set; }
 
         public List<PurchaseOrderLine> Lines { get; set; } = new();
+
+        public decimal Total => Lines.Sum(l => l.Quantity * l.UnitCost);
     }
 
     public class PurchaseOrderLine

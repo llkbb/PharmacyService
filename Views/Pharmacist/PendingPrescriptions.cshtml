@@ -1,0 +1,120 @@
+@model IEnumerable<PharmacyChain.Models.Prescription>
+
+@{
+    ViewData["Title"] = "Очікують перевірки";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-hourglass-split"></i> Рецепти, що очікують перевірки</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle"></i> Всі рецепти перевірено!
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> Є @Model.Count() рецепт(ів) для перевірки
+        </div>
+
+        @foreach (var prescription in Model)
+        {
+            <div class="card mb-3">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0">
+                        Рецепт #@prescription.Id
+                        <span class="badge bg-secondary float-end">@prescription.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Клієнт:</strong> @prescription.Customer.FullName</p>
+                            <p><strong>Email:</strong> @prescription.Customer.Email</p>
+                            <p><strong>Телефон:</strong> @prescription.Customer.Phone</p>
+                            <p><strong>Лікар:</strong> @prescription.DoctorName</p>
+                            @if (prescription.Drug != null)
+                            {
+                                <p><strong>Препарат:</strong> @prescription.Drug.Name</p>
+                            }
+                            @if (!string.IsNullOrEmpty(prescription.Notes))
+                            {
+                                <p><strong>Примітки:</strong> @prescription.Notes</p>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            @if (!string.IsNullOrEmpty(prescription.PhotoPath))
+                            {
+                                <p><strong>Фото рецепту:</strong></p>
+                                <a href="@prescription.PhotoPath" target="_blank">
+                                    <img src="@prescription.PhotoPath" alt="Рецепт" class="img-thumbnail" style="max-width: 100%; max-height: 400px;" />
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> Фото не завантажено
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <form method="post" asp-action="ApprovePrescription" class="d-inline">
+                        <input type="hidden" name="id" value="@prescription.Id" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Аптека для видачі:</label>
+                                <select name="pharmacyId" class="form-select" required>
+                                    @foreach (var pharmacy in ViewBag.Pharmacies as List<PharmacyChain.Models.Pharmacy>)
+                                    {
+                                        <option value="@pharmacy.Id">@pharmacy.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 align-self-end">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle"></i> Затвердити
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal@(prescription.Id)">
+                        <i class="bi bi-x-circle"></i> Відхилити
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal для відхилення -->
+            <div class="modal fade" id="rejectModal@(prescription.Id)" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">Відхилити рецепт #@prescription.Id</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="post" asp-action="RejectPrescription">
+                            <div class="modal-body">
+                                <input type="hidden" name="id" value="@prescription.Id" />
+                                <label class="form-label">Причина відхилення:</label>
+                                <textarea name="reason" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                                <button type="submit" class="btn btn-danger">Відхилити рецепт</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+
+    <a asp-action="Index" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left"></i> До Dashboard
+    </a>
+</div>

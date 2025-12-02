@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Завантажити рецепт";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-file-earmark-medical"></i> Завантажити рецепт</h2>
+    <p class="lead">Завантажте фото рецепту для перевірки аптекарем</p>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" asp-action="UploadPrescription">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Ім'я лікаря <span class="text-danger">*</span></label>
+                        <input type="text" name="doctorName" class="form-control" required />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Препарат (необов'язково)</label>
+                        <select name="drugId" class="form-select">
+                            <option value="">-- Оберіть препарат --</option>
+                            @foreach (var drug in ViewBag.Drugs as List<PharmacyChain.Models.Drug>)
+                            {
+                                <option value="@drug.Id">@drug.Name</option>
+                            }
+                        </select>
+                        <small class="text-muted">Якщо знаєте який препарат виписав лікар</small>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Фото рецепту</label>
+                        <input type="file" name="photo" class="form-control" accept="image/*" />
+                        <small class="text-muted">Формати: JPG, PNG (макс. 5 МБ)</small>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label">Примітки</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Додаткова інформація про рецепт..."></textarea>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Важливо:</strong>
+                    <ul class="mb-0">
+                        <li>Рецепт має бути чітким та читабельним</li>
+                        <li>На рецепті повинна бути печатка лікаря</li>
+                        <li>Аптекар перевірить рецепт протягом 24 годин</li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-upload"></i> Завантажити рецепт
+                </button>
+                <a asp-action="MyPrescriptions" class="btn btn-secondary">Скасувати</a>
+            </form>
+        </div>
+    </div>
+</div>

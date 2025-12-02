@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
@@ -6,10 +7,14 @@ using PharmacyChain.Models;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin")]
+
     public class EmployeesController : Controller
     {
+
         private readonly ApplicationDbContext _db;
         public EmployeesController(ApplicationDbContext db) => _db = db;
+
 
         public async Task<IActionResult> Index()
         {

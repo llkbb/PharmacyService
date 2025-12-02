@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PharmacyChain.Data;
@@ -6,6 +7,8 @@ using PharmacyChain.Models;
 
 namespace PharmacyChain.Controllers.Crud
 {
+    [Authorize(Roles = "Admin,Pharmacist")]
+
     public class PrescriptionsController : Controller
     {
         private readonly ApplicationDbContext _db;
@@ -43,14 +46,19 @@ namespace PharmacyChain.Controllers.Crud
             {
                 _db.Prescriptions.Add(item);
                 await _db.SaveChangesAsync();
+                TempData["Success"] = "Рецепт успішно створено!";
                 return RedirectToAction(nameof(Index));
             }
+            ViewBag.Customers = new SelectList(_db.Customers, "Id", "FullName");
+            ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name");
+            ViewBag.Pharmacies = new SelectList(_db.Pharmacies, "Id", "Name");
             return View(item);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
             var item = await _db.Prescriptions.FindAsync(id);
+            if (item == null) return NotFound();
             ViewBag.Customers = new SelectList(_db.Customers, "Id", "FullName");
             ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name");
             ViewBag.Pharmacies = new SelectList(_db.Pharmacies, "Id", "Name");
@@ -61,9 +69,17 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> Edit(int id, Prescription item)
         {
             if (id != item.Id) return NotFound();
-            _db.Update(item);
-            await _db.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                _db.Update(item);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Рецепт успішно оновлено!";
+                return RedirectToAction(nameof(Index));
+            }
+            ViewBag.Customers = new SelectList(_db.Customers, "Id", "FullName");
+            ViewBag.Drugs = new SelectList(_db.Drugs, "Id", "Name");
+            ViewBag.Pharmacies = new SelectList(_db.Pharmacies, "Id", "Name");
+            return View(item);
         }
 
         public async Task<IActionResult> Delete(int? id)
@@ -79,8 +95,12 @@ namespace PharmacyChain.Controllers.Crud
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _db.Prescriptions.FindAsync(id);
-            _db.Prescriptions.Remove(item);
-            await _db.SaveChangesAsync();
+            if (item != null)
+            {
+                _db.Prescriptions.Remove(item);
+                await _db.SaveChangesAsync();
+                TempData["Success"] = "Рецепт успішно видалено!";
+            }
             return RedirectToAction(nameof(Index));
         }
     }
