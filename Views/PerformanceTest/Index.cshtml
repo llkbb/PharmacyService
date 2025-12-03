@@ -1,0 +1,385 @@
+@{
+    ViewData["Title"] = "Тестування продуктивності";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-speedometer2"></i> Тестування продуктивності запитів</h2>
+    <p class="lead">Порівняння послідовного та паралельного виконання запитів</p>
+
+    <!-- Таблиця порівняння результатів -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Таблиця порівняння результатів</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="resultsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Метод</th>
+                            <th>Записів</th>
+                            <th>Час (мс)</th>
+                            <th>Час (сек)</th>
+                            <th>Швидкість (рек/с)</th>
+                            <th>Прискорення</th>
+                            <th>Дата/Час</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">
+                                Запустіть тести нижче для отримання результатів
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-3">
+                <button class="btn btn-danger btn-sm" onclick="clearResults()">
+                    <i class="bi bi-trash"></i> Очистити результати
+                </button>
+                <button class="btn btn-info btn-sm" onclick="exportResults()">
+                    <i class="bi bi-download"></i> Експортувати CSV
+                </button>
+                <button class="btn btn-success btn-sm" onclick="showComparison()">
+                    <i class="bi bi-bar-chart"></i> Порівняти методи
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Завдання 1-2: Невелика вибірка -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Завдання 1-2: Невелика вибірка (до 20 записів)</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-action="TestSequential" class="d-inline">
+                <input type="number" name="recordCount" value="20" min="1" max="100" class="form-control d-inline w-auto" />
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-arrow-right-circle"></i> Послідовний запит
+                </button>
+            </form>
+
+            <form method="post" asp-action="TestParallel" class="d-inline ms-2">
+                <input type="number" name="recordCount" value="20" min="1" max="100" class="form-control d-inline w-auto" />
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-arrow-right-circle-fill"></i> Паралельний запит
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Завдання 3: Генерація даних -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Завдання 3: Генерація великої кількості даних</h5>
+        </div>
+        <div class="card-body">
+            <p>
+                <i class="bi bi-exclamation-triangle"></i> 
+                <strong>Увага:</strong> Генерація 100,000 записів може зайняти кілька хвилин!
+            </p>
+            <form method="post" asp-action="GenerateLargeDataset">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('Згенерувати 100,000 записів? Це може зайняти 2-5 хвилин.')">
+                    <i class="bi bi-database-fill-add"></i> Згенерувати 100,000 записів
+                </button>
+            </form>
+
+            <form method="post" asp-action="ClearLargeDataset" class="d-inline ms-2">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Видалити ВСІ продажі?')">
+                    <i class="bi bi-trash"></i> Очистити базу
+                </button>
+            </form>
+
+            <div class="mt-2">
+                <small class="text-muted">
+                    Поточна кількість продажів: <strong id="salesCount">Завантаження...</strong>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Завдання 4: Велика вибірка -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Завдання 4: Велика вибірка (10,000+ записів)</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-action="TestLargeSequential" class="d-inline">
+                <input type="number" name="recordCount" value="10000" min="100" max="100000" class="form-control d-inline w-auto" />
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-arrow-right-circle"></i> Послідовний запит (велика вибірка)
+                </button>
+            </form>
+
+            <form method="post" asp-action="TestLargeParallel" class="d-inline ms-2">
+                <input type="number" name="recordCount" value="10000" min="100" max="100000" class="form-control d-inline w-auto" />
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-arrow-right-circle-fill"></i> Паралельний запит (велика вибірка)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Завдання 5: Розпаралелювання -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Завдання 5: Порівняння технологій розпаралелювання</h5>
+        </div>
+        <div class="card-body">
+            <p>Оберіть кількість записів та технологію:</p>
+
+            <div class="row">
+                <div class="col-md-12 mb-2">
+                    <form method="post" asp-action="TestParallelForEach" class="d-inline">
+                        <input type="number" name="recordCount" value="10000" min="100" max="100000" class="form-control d-inline w-auto" />
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-gear"></i> Parallel.ForEach
+                        </button>
+                    </form>
+
+                    <form method="post" asp-action="TestTPL" class="d-inline ms-2">
+                        <input type="number" name="recordCount" value="10000" min="100" max="100000" class="form-control d-inline w-auto" />
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cpu"></i> TPL (Task Parallel Library)
+                        </button>
+                    </form>
+
+                    <form method="post" asp-action="TestPLINQ" class="d-inline ms-2">
+                        <input type="number" name="recordCount" value="10000" min="100" max="100000" class="form-control d-inline w-auto" />
+                        <button type="submit" class="btn btn-info">
+                            <i class="bi bi-bezier2"></i> PLINQ
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info mt-3">
+                <h6>Опис технологій:</h6>
+                <ul class="mb-0">
+                    <li><strong>Parallel.ForEach</strong> - проста паралельна обробка колекції</li>
+                    <li><strong>TPL (Task Parallel Library)</strong> - розбиття на задачі (Task)</li>
+                    <li><strong>PLINQ</strong> - паралельний LINQ з автоматичним розподілом</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Порівняння методів -->
+    <div class="card mb-4" id="comparisonCard" style="display:none;">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> Детальне порівняння методів</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let testResults = JSON.parse(localStorage.getItem('testResults') || '[]');
+
+        // Завантажити кількість продажів
+        fetch('/api/sales/count')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('salesCount').textContent = data.count.toLocaleString();
+            })
+            .catch(() => {
+                document.getElementById('salesCount').textContent = 'Помилка';
+            });
+
+        function displayResults() {
+            const tbody = document.getElementById('resultsBody');
+            
+            if (testResults.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Запустіть тести нижче для отримання результатів</td></tr>';
+                return;
+            }
+
+            // Знайти базовий (послідовний) результат для обчислення прискорення
+            const baseline = testResults.find(r => r.method.includes('Послідовний'));
+            const baselineTime = baseline ? baseline.elapsedMs : null;
+
+            tbody.innerHTML = testResults.map((result, index) => {
+                const speed = (result.recordCount / (result.elapsedMs / 1000)).toFixed(0);
+                const speedup = baselineTime ? (baselineTime / result.elapsedMs).toFixed(2) + 'x' : '-';
+                const timestamp = new Date(result.timestamp).toLocaleString('uk-UA');
+                
+                let methodBadge = '';
+                if (result.method.includes('Послідовний')) {
+                    methodBadge = '<span class="badge bg-primary">Sequential</span>';
+                } else if (result.method.includes('Parallel.ForEach')) {
+                    methodBadge = '<span class="badge bg-success">Parallel.ForEach</span>';
+                } else if (result.method.includes('TPL')) {
+                    methodBadge = '<span class="badge bg-info">TPL</span>';
+                } else if (result.method.includes('PLINQ')) {
+                    methodBadge = '<span class="badge bg-warning">PLINQ</span>';
+                } else if (result.method.includes('Паралельний')) {
+                    methodBadge = '<span class="badge bg-success">Parallel</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${methodBadge} ${result.method}</td>
+                        <td>${result.recordCount.toLocaleString()}</td>
+                        <td><strong>${result.elapsedMs}</strong></td>
+                        <td>${(result.elapsedMs / 1000).toFixed(2)}</td>
+                        <td>${speed}</td>
+                        <td><strong class="text-success">${speedup}</strong></td>
+                        <td><small>${timestamp}</small></td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteResult(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function clearResults() {
+            if (confirm('Очистити всі результати?')) {
+                testResults = [];
+                localStorage.setItem('testResults', JSON.stringify(testResults));
+                displayResults();
+            }
+        }
+
+        function deleteResult(index) {
+            testResults.splice(index, 1);
+            localStorage.setItem('testResults', JSON.stringify(testResults));
+            displayResults();
+        }
+
+        function exportResults() {
+            if (testResults.length === 0) {
+                alert('Немає результатів для експорту');
+                return;
+            }
+
+            let csv = 'Метод,Записів,Час (мс),Час (сек),Швидкість (рек/с),Дата/Час\n';
+            testResults.forEach(r => {
+                const speed = (r.recordCount / (r.elapsedMs / 1000)).toFixed(0);
+                const timestamp = new Date(r.timestamp).toLocaleString('uk-UA');
+                csv += `"${r.method}",${r.recordCount},${r.elapsedMs},${(r.elapsedMs/1000).toFixed(2)},${speed},"${timestamp}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'performance_results_' + new Date().toISOString().slice(0,10) + '.csv';
+            link.click();
+        }
+
+        let comparisonChart = null;
+
+        function showComparison() {
+            if (testResults.length < 2) {
+                alert('Запустіть мінімум 2 тести для порівняння');
+                return;
+            }
+
+            const card = document.getElementById('comparisonCard');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth' });
+
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+            
+            if (comparisonChart) {
+                comparisonChart.destroy();
+            }
+
+            // ВИПРАВЛЕННЯ: Використовуємо короткі назви замість повних
+            const labels = testResults.map(r => {
+                // Витягуємо тільки ключові слова
+                if (r.method.includes('Sequential') || r.method.includes('Послідовний')) {
+                    return 'Sequential';
+                } else if (r.method.includes('Parallel.ForEach')) {
+                    return 'Parallel.ForEach';
+                } else if (r.method.includes('TPL')) {
+                    return 'TPL';
+                } else if (r.method.includes('PLINQ')) {
+                    return 'PLINQ';
+                } else if (r.method.includes('Parallel') || r.method.includes('Паралельний')) {
+                    return 'Parallel';
+                }
+                return r.method.substring(0, 20);
+            });
+
+            const data = testResults.map(r => r.elapsedMs);
+            const speeds = testResults.map(r => (r.recordCount / (r.elapsedMs / 1000)).toFixed(0));
+
+            comparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Час виконання (мс)',
+                        data: data,
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(153, 102, 255, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Порівняння часу виконання (менше = краще)',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return [
+                                        'Час: ' + testResults[index].elapsedMs + ' мс',
+                                        'Записів: ' + testResults[index].recordCount.toLocaleString(),
+                                        'Швидкість: ' + speeds[index] + ' рек/с'
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Час (мс)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Метод'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Відображення результатів при завантаженні
+        displayResults();
+    </script>
+}

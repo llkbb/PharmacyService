@@ -1,0 +1,109 @@
+@model IEnumerable<PharmacyChain.Models.Sale>
+
+@{
+    ViewData["Title"] = "Результат тесту";
+}
+
+<div class="container mt-4">
+    <h2><i class="bi bi-check-circle"></i> Результат тесту</h2>
+
+    <div class="alert alert-success">
+        <h5><i class="bi bi-speedometer"></i> Метод: @ViewBag.Method</h5>
+        <hr />
+        <div class="row">
+            <div class="col-md-3">
+                <strong>Кількість записів:</strong><br />
+                <h3>@ViewBag.RecordCount</h3>
+            </div>
+            <div class="col-md-3">
+                <strong>Час виконання (мс):</strong><br />
+                <h3 class="text-primary">@ViewBag.ElapsedMs мс</h3>
+            </div>
+            <div class="col-md-3">
+                <strong>Час виконання (тіки):</strong><br />
+                <h3>@ViewBag.ElapsedTicks</h3>
+            </div>
+            <div class="col-md-3">
+                <strong>Швидкість:</strong><br />
+                <h3>@((ViewBag.RecordCount / (double)ViewBag.ElapsedMs * 1000).ToString("F2")) рек/сек</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5>Завантажені дані (перші 10 записів)</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Аптека</th>
+                            <th>Клієнт</th>
+                            <th>Дата</th>
+                            <th>Позиції</th>
+                            <th>Сума</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sale in Model.Take(10))
+                        {
+                            <tr>
+                                <td>@sale.Id</td>
+                                <td>@(sale.Pharmacy?.Name ?? "N/A")</td>
+                                <td>@(sale.Customer?.FullName ?? "Анонім")</td>
+                                <td>@sale.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@sale.Lines.Count</td>
+                                <td>@sale.Total.ToString("F2") грн</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Index" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Назад до тестів
+        </a>
+        <button class="btn btn-success" onclick="window.location.href = window.location.href">
+            <i class="bi bi-arrow-clockwise"></i> Повторити тест
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Автоматично зберегти результат
+        const result = {
+            method: '@ViewBag.Method',
+            recordCount: @ViewBag.RecordCount,
+            elapsedMs: @ViewBag.ElapsedMs,
+            elapsedSeconds: (@ViewBag.ElapsedMs / 1000.0).toFixed(2),
+            timestamp: new Date().toISOString()
+        };
+
+        let testResults = JSON.parse(localStorage.getItem('testResults') || '[]');
+        testResults.push(result);
+        
+        // Зберігаємо останні 50 результатів
+        if (testResults.length > 50) {
+            testResults = testResults.slice(-50);
+        }
+        
+        localStorage.setItem('testResults', JSON.stringify(testResults));
+
+        console.log('? Результат збережено:', result);
+        
+        // Показати повідомлення
+        setTimeout(() => {
+            alert('? Результат додано до таблиці порівняння!\n\n' +
+                  'Метод: ' + result.method + '\n' +
+                  'Час: ' + result.elapsedMs + ' мс\n' +
+                  'Записів: ' + result.recordCount.toLocaleString());
+        }, 500);
+    </script>
+}
